@@ -9,15 +9,16 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(plyr)
 library(ggplot2)
-
+library(rstudioapi)
 ```
 
 # Load dataset and correct details
 
 ```{r loading, include=FALSE}
-ds.og.file = "~/Documentos/UNI/UNI_AdDC_Exam/Accidents_Trafic_Catalunya.csv"
-ds.file = "~/Documentos/UNI/UNI_AdDC_Exam/ATC.csv"
-update = T
+path = dirname(rstudioapi::getSourceEditorContext()$path)
+ds.og.file = paste(path, "/Accidents_Trafic_Catalunya.csv", sep = '')
+ds.file =  paste(path, "/ATC.csv", sep = '')
+update = F
 
 if(update || !file.exists(ds.file)) {
   dataset <- read.csv(ds.og.file)
