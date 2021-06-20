@@ -234,11 +234,11 @@ ggplot(data = d.dia.VM, aes(y = n, x = nom)) +
 
 ggplot(data = d.dia.VM, aes(y = victimes, x = nom)) +
   geom_bar(stat = "identity", position = "dodge", fill = d.dia.VM$color, color = 'black') +
-  ggtitle("Victimes") + ylab("Mitja") + xlab("Dia de la setmana")
+  ggtitle("Victimes per accident") + ylab("Mitja") + xlab("Dia de la setmana")
 
 ggplot(data = d.dia.VM, aes(y = morts, x = nom)) +
   geom_bar(stat = "identity", position = "dodge", fill = d.dia.VM$color, color = 'black') +
-  ggtitle("Morts") + ylab("Mitja") + xlab("Dia de la setmana")
+  ggtitle("Morts per accident") + ylab("Mitja") + xlab("Dia de la setmana")
 ```
 
 ### Analisi
@@ -401,8 +401,9 @@ points(d.mes.var.M * sin(d.mes.theta.M), d.mes.var.M * cos(d.mes.theta.M),
 ```{r via, echo=TRUE}
 # Vectors rellevants
 nom.via <- names(sort(tapply(dataset$F_VICTIMES, dataset$D_TIPUS_VIA, length), decreasing = TRUE))
+nom.via <- nom.via[nom.via != 'Altres']
 nom.viaComp <- c('Via urbana', 'Carretera\nconvencional',
-                 'Altres', 'Autovia', 'Autopista',
+                 'Autovia', 'Autopista',
                  'Camí rural\nPista forestal')
 
 # DataFrame de les dades importants
@@ -419,11 +420,11 @@ ggplot(data = d.via.VM, aes(y = n, x = nom)) +
 
 ggplot(data = d.via.VM, aes(y = victimes, x = nom)) +
   geom_bar(stat = "identity", position = "dodge", fill = 'white', color = 'black') +
-  ggtitle("Victimes") + ylab("Mitja") + xlab("Tipus de via")
+  ggtitle("Victimes per accident") + ylab("Mitja") + xlab("Tipus de via")
 
 ggplot(data = d.via.VM, aes(y = morts, x = nom)) +
   geom_bar(stat = "identity", position = "dodge", fill = 'white', color = 'black') +
-  ggtitle("Morts") + ylab("Mitja") + xlab("Tipus de via")
+  ggtitle("Morts per accident") + ylab("Mitja") + xlab("Tipus de via")
 ```
 
 ### Analisi
@@ -481,13 +482,13 @@ for(i in 1:length(nom.via)) {
 ggplot(data = p.via.VM, aes(y = victimes, x = nom)) +
   geom_bar(stat = "identity", position = "dodge", fill = 'white', color = 'black') +
   geom_errorbar(aes(ymin = IC.min.V, ymax = IC.max.V), width=.2, position=position_dodge(.9)) +
-  ggtitle("Victimes") + ylab("Mitja") + xlab("Tipus de via")
+  ggtitle("Victimes per accident") + ylab("Mitja") + xlab("Tipus de via")
 
 # Plot dels resultats (Morts)
 ggplot(data = p.via.VM, aes(y = morts, x = nom)) +
   geom_bar(stat = "identity", position = "dodge", fill = 'white', color = 'black') +
   geom_errorbar(aes(ymin = IC.min.M, ymax = IC.max.M), width=.2, position=position_dodge(.9)) +
-  ggtitle("Morts") + ylab("Mitja") + xlab("Tipus de via")
+  ggtitle("Morts per accident") + ylab("Mitja") + xlab("Tipus de via")
 ```
 
 ## Tipus de Carril
@@ -512,11 +513,11 @@ ggplot(data = d.carril.VM, aes(y = n, x = nom)) +
 
 ggplot(data = d.carril.VM, aes(y = victimes, x = nom)) +
   geom_bar(stat = "identity", position = "dodge", fill = 'darkgreen', color = 'black') +
-  ggtitle("Victimes") + ylab("Mitja") + xlab("Tipus de carril")
+  ggtitle("Victimes per accident") + ylab("Mitja") + xlab("Tipus de carril")
 
 ggplot(data = d.carril.VM, aes(y = morts, x = nom)) +
   geom_bar(stat = "identity", position = "dodge", fill = 'darkgreen', color = 'black') +
-  ggtitle("Morts") + ylab("Mitja") + xlab("Tipus de carril")
+  ggtitle("Morts per accident") + ylab("Mitja") + xlab("Tipus de carril")
 ```
 
 ### Analisi
@@ -574,13 +575,13 @@ for(i in 1:length(nom.carril)) {
 ggplot(data = p.carril.VM, aes(y = victimes, x = nom)) +
   geom_bar(stat = "identity", position = "dodge", fill = 'darkgreen', color = 'black') +
   geom_errorbar(aes(ymin = IC.min.V, ymax = IC.max.V), width=.2, position=position_dodge(.9)) +
-  ggtitle("Victimes") + ylab("Mitja") + xlab("Tipus de carril")
+  ggtitle("Victimes per accident") + ylab("Mitja") + xlab("Tipus de carril")
 
 #Plot dels resultats (Morts)
 ggplot(data = p.carril.VM, aes(y = morts, x = nom)) +
   geom_bar(stat = "identity", position = "dodge", fill = 'darkgreen', color = 'black') +
   geom_errorbar(aes(ymin = IC.min.M, ymax = IC.max.M), width=.2, position=position_dodge(.9)) +
-  ggtitle("Morts") + ylab("Mitja") + xlab("Tipus de carril")
+  ggtitle("Morts per accident") + ylab("Mitja") + xlab("Tipus de carril")
 ```
 
 # Altres factors
@@ -615,11 +616,11 @@ ggplot(data = d.vel.VM, aes(y = n, x = nom)) +
 
 ggplot(data = d.vel.VM, aes(y = victimes, x = nom)) +
   geom_bar(stat = "identity", position = "dodge", fill = 'cyan', color = 'black') +
-  ggtitle("Victimes") + ylab("Mitja") + xlab("Velocitat màxima")
+  ggtitle("Victimes per accident") + ylab("Mitja") + xlab("Velocitat màxima")
 
 ggplot(data = d.vel.VM, aes(y = morts, x = nom)) +
   geom_bar(stat = "identity", position = "dodge", fill = 'cyan', color = 'black') +
-  ggtitle("Morts") + ylab("Mitja") + xlab("Velocitat màxima")
+  ggtitle("Morts per accident") + ylab("Mitja") + xlab("Velocitat màxima")
 
 ggplot(data = d.vel.VM, aes(y = MpV100, x = nom)) +
   geom_bar(stat = "identity", position = "dodge", fill = 'cyan', color = 'black') +
@@ -723,14 +724,14 @@ d.vel.10.VM <- data.frame(victimes = tapply(d.vel.all$victimes, d.vel.all$vel10,
 # Plots de les pendents (Victimes)
 ggplot(data = d.vel.10.VM, aes(y = victimes, x = vel10)) +
   geom_bar(stat = "identity", position = "dodge", fill = 'cyan', color = 'black') +
-  ggtitle("Víctimes") + ylab("Mitja") + xlab("Velocitat màxima") +
+  ggtitle("Víctimes per accident") + ylab("Mitja") + xlab("Velocitat màxima") +
   geom_abline(intercept = summary(d.vel.fit.V)$coefficient[1],
               slope = summary(d.vel.fit.V)$coefficient[2], color = 'red')
 
 # Plots de les pendents (Morts)
 ggplot(data = d.vel.10.VM, aes(y = morts, x = vel10)) +
   geom_bar(stat = "identity", position = "dodge", fill = 'cyan', color = 'black') +
-  ggtitle("Morts") + ylab("Mitja") + xlab("Velocitat màxima") +
+  ggtitle("Morts per accident") + ylab("Mitja") + xlab("Velocitat màxima") +
   geom_abline(intercept = summary(d.vel.fit.M)$coefficient[1],
               slope = summary(d.vel.fit.M)$coefficient[2], color = 'red')
 
@@ -845,13 +846,13 @@ for(i in 1:length(d.visib.opt)) {
 ggplot(data = bst.visib.VM, aes(y = victimes, x = type, fill = class)) +
   geom_bar(stat = "identity", position = "dodge") +
   geom_errorbar(aes(ymin = IC.min.V, ymax = IC.max.V), width=.2, position=position_dodge(.9)) +
-  ggtitle("Victimes") + ylab("Mitja") + xlab("Tipus de carril")
+  ggtitle("Victimes per accident") + ylab("Mitja") + xlab("Tipus de cFactor de visibilitatarril")
 
 # Plot dels resultats (Morts)
 ggplot(data = bst.visib.VM, aes(y = morts, x = type, fill = class)) +
   geom_bar(stat = "identity", position = "dodge") +
   geom_errorbar(aes(ymin = IC.min.M, ymax = IC.max.M), width=.2, position=position_dodge(.9)) +
-  ggtitle("Morts") + ylab("Mitja") + xlab("Tipus de carril")
+  ggtitle("Morts per accident") + ylab("Mitja") + xlab("Factor de visibilitat")
 ```
 
 ## Estat del terreny
@@ -871,16 +872,16 @@ d.sup.VM <- data.frame(victimes = tapply(dataset$F_VICTIMES, dataset$D_SUPERFICI
 # Plot de les dades
 ggplot(data = d.sup.VM, aes(x = nom, y = n), col) +
   geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.sup.VM$color, color = 'black') + 
-  ggtitle("Histograma de numero d\'accidents") + ylab("Total") + xlab("Temporal") +
+  ggtitle("Histograma de numero d\'accidents") + ylab("Total") + xlab("Terreny") +
   scale_y_continuous(trans = 'log10')
 
 ggplot(data = d.sup.VM, aes(x = nom, y = victimes), col) +
   geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.sup.VM$color, color = 'black') + 
-  ggtitle("Histograma de numero d\'accidents") + ylab("Victimes") + xlab("Temporal")
+  ggtitle("Victimes per accident") + ylab("Mitja") + xlab("Terreny")
 
 ggplot(data = d.sup.VM, aes(x = nom, y = morts), col) +
   geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.sup.VM$color, color = 'black') + 
-  ggtitle("Histograma de numero d\'accidents") + ylab("Morts") + xlab("Temporal")
+  ggtitle("Morts per accident") + ylab("Mitja") + xlab("Terreny")
 ```
 
 ### Analisi
@@ -914,7 +915,7 @@ dp.sup.VM <- data.frame(victimes = d.sup.VM$victimes,
 
 for(i in d.sup.type.n) {
     dp.sup.VM$IC.max.V[i] = 2 * mean(p.sup.V[i, ]) - quantile(p.sup.V[i, ], 0.025)
-    dp.sup.VM$IC.min.V[i] = max(2 * mean(p.sup.V[i, ]) - quantile(p.sup.V[i, ], 0.975), 0)
+    dp.sup.VM$IC.min.V[i] = max(2 * mean(p.sup.V[i, ]) - quantile(p.sup.V[i, ], 0.975), 1)
     dp.sup.VM$IC.max.M[i] = 2 * mean(p.sup.M[i, ]) - quantile(p.sup.M[i, ], 0.025)
     dp.sup.VM$IC.min.M[i] = max(2 * mean(p.sup.M[i, ]) - quantile(p.sup.M[i, ], 0.975), 0)
 }
@@ -931,13 +932,13 @@ for(i in 1:length(nom.superficie)) {
 ggplot(data = dp.sup.VM, aes(x = nom, y = victimes), col) +
   geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.sup.VM$color, color = 'black') + 
   geom_errorbar(aes(ymin = IC.min.V, ymax = IC.max.V), width=.2, position=position_dodge(.9)) +
-  ggtitle("Histograma de numero d\'accidents") + ylab("Victimes") + xlab("Temporal")
+  ggtitle("Victimes per accident") + ylab("Mitja") + xlab("Terreny")
 
 # Plot dels resultats (Morts)
 ggplot(data = dp.sup.VM, aes(x = nom, y = morts), col) +
   geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.sup.VM$color, color = 'black') + 
   geom_errorbar(aes(ymin = IC.min.M, ymax = IC.max.M), width=.2, position=position_dodge(.9)) +
-  ggtitle("Histograma de numero d\'accidents") + ylab("Morts") + xlab("Temporal")
+  ggtitle("Morts per accident") + ylab("Mitja") + xlab("Terreny")
 ```
 
 # Altres gràfiques d'interès
