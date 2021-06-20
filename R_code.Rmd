@@ -13,15 +13,42 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Carregar llibreries
 
-```{r llibreries, ehco=FALSE}
+```{r llibreries, ehco=TRUE}
 library(plyr)
 library(ggplot2)
 library(rstudioapi)
 ```
 
+## Funcions utils
+
+```{r funcions, echo=TRUE}
+circular.mean <- function(X) {
+  x <- mean(cos(as.numeric(names(X))) * X)
+  y <- mean(sin(as.numeric(names(X))) * X)
+  n <- sum(X)
+  theta.mean <- atan2(y, x)
+  if(theta.mean < 0)
+    theta.mean = theta.mean + 2 * pi
+  theta.var = sqrt(x^2 + y^2) / n
+  return(c(theta.mean, theta.var))
+}
+
+resample.means <- function(X, Y, I) {
+  n <- length(Y)
+  Y.means <- numeric(n)
+  X.index = 0
+  for(i in 1:n) {
+    Y.means[i] <- mean(X[I[(X.index + 1):(X.index + Y[i])]])
+    X.index = X.index + Y[i]
+  }
+  names(Y.means) <- names(Y)
+  return(Y.means)
+}
+```
+
 ## Carregar dades
 
-```{r loading, ehco=FALSE}
+```{r loading, ehco=TRUE}
 path = dirname(rstudioapi::getSourceEditorContext()$path)
 ds.og.file = paste(path, "/Accidents_Trafic_Catalunya.csv", sep = '')
 ds.file =  paste(path, "/ATC.csv", sep = '')
@@ -59,7 +86,6 @@ if(update || !file.exists(ds.file)) {
 } else {
   dataset <- read.csv(ds.file)
   dataset$data = as.Date(dataset$dat, '%d/%m/%Y')
-# dataset <- dataset[dataset$Any >= (max(dataset$Any) - 2), ]
 }
 ```
 
@@ -97,29 +123,6 @@ ggplot(data = d.hora.VM, aes(x = nom, y = morts), col) +
 ### Analisi
 
 ```{r analisi_hora, echo=TRUE}
-circular.mean <- function(X) {
-  x <- mean(cos(as.numeric(names(X))) * X)
-  y <- mean(sin(as.numeric(names(X))) * X)
-  n <- sum(X)
-  theta.mean <- atan2(y, x)
-  if(theta.mean < 0)
-    theta.mean = theta.mean + 2 * pi
-  theta.var = sqrt(x^2 + y^2) / n
-  return(c(theta.mean, theta.var))
-}
-
-resample.means <- function(X, Y, I) {
-  n <- length(Y)
-  Y.means <- numeric(n)
-  X.index = 0
-  for(i in 1:n) {
-    Y.means[i] <- mean(X[I[(X.index + 1):(X.index + Y[i])]])
-    X.index = X.index + Y[i]
-  }
-  names(Y.means) <- names(Y)
-  return(Y.means)
-}
-
 d.hora.all <- data.frame(victimes = dataset$F_VICTIMES,
                          morts = dataset$F_MORTS,
                          hora = dataset$hor,
@@ -188,7 +191,7 @@ points(d.hora.var.M * sin(d.hora.theta.M), d.hora.var.M * cos(d.hora.theta.M),
 
 ## Día de la setmana
 
-```{r dia, echo=FALSE}
+```{r dia, echo=TRUE}
 nom.diaSem <- weekdays(as.Date('24/05/2021', '%d/%m/%Y')+0:6)
 nom.tipusDia <- c(rep('laborable', 5), rep('fi de setmana', 2))
 color.feiner <- c(rep('red', 5), rep('blue', 2))
@@ -215,7 +218,7 @@ ggplot(data = d.dia.VM, aes(y = morts, x = nom)) +
 
 ### Analisi
 
-```{r analisi_dia, echo=FALSE}
+```{r analisi_dia, echo=TRUE}
 # agafar dades respecte el dia de la setmana
 d.dia.all <- data.frame(victimes = dataset$F_VICTIMES,
                          morts = dataset$F_MORTS,
@@ -263,7 +266,7 @@ d.dia.fit.fds.M <- lm(d.dia.all$morts[d.dia.all$tipus == 'fi de setmana']~
 
 ## Epoca de l'any
 
-```{r mes, echo=FALSE}
+```{r mes, echo=TRUE}
 nom.mes <- format(ISOdate(0,1:12,1), '%B')
 color.estacio <- c(rep('cyan', 2), rep('green', 3), rep('yellow', 3), rep('orange', 3), 'cyan')
 
@@ -291,7 +294,7 @@ ggplot(data = d.mes.VM, aes(x = nom, y = morts), col) +
 
 ### Analisi
 
-```{r analisi_mes, echo=FALSE}
+```{r analisi_mes, echo=TRUE}
 d.mes.all <- data.frame(victimes = dataset$F_VICTIMES,
                          morts = dataset$F_MORTS,
                          mes = dataset$mes,
@@ -352,18 +355,11 @@ points(d.mes.var.M * sin(d.mes.theta.M), d.mes.var.M * cos(d.mes.theta.M),
        col = 'red', cex = .5)
 ```
 
-### Remove
-
-```{r analisi__mes, echo=FALSE}
-
-
-```
-
 # On?
 
 ## Tipus de via
 
-```{r via, echo=FALSE}
+```{r via, echo=TRUE}
 nom.via <- names(sort(tapply(dataset$F_VICTIMES, dataset$D_TIPUS_VIA, length), decreasing = TRUE))
 nom.viaComp <- c('Via urbana', 'Carretera\nconvencional',
                  'Altres', 'Autovia', 'Autopista',
@@ -395,7 +391,7 @@ d.via.all <- data.frame(victimes = dataset$F_VICTIMES,
                        morts = dataset$F_MORTS,
                        via = dataset$D_TIPUS_VIA)
 
-n.rep = 1000
+n.rep = 10000
 d.via.c.V <- tapply(d.via.all$victimes, d.via.all$via, c)
 d.via.c.M <- tapply(d.via.all$morts, d.via.all$via, c)
 p.via.mean.V <- list()
@@ -439,7 +435,7 @@ ggplot(data = p.via.VM, aes(y = morts, x = nom)) +
 
 ## Tipus de Carril (Bi direccional, adelantament, acceleracio)
 
-```{r carril, echo=FALSE}
+```{r carril, echo=TRUE}
 nom.carril <- names(sort(tapply(dataset$F_VICTIMES, dataset$D_CARRIL_ESPECIAL, length), decreasing = TRUE))
 nom.carril <- nom.carril[nom.carril != 'Sense Especificar']
 nom.carrilComp <- gsub("/", "\n", gsub(" ", "\n", nom.carril))
@@ -450,16 +446,16 @@ d.carril.VM <- data.frame(victimes = tapply(dataset$F_VICTIMES, dataset$D_CARRIL
                        nom = factor(nom.carrilComp, levels = nom.carrilComp))
 
 ggplot(data = d.carril.VM, aes(y = n, x = nom)) +
-  geom_bar(stat = "identity", position = "dodge", fill = 'lightgray', color = 'black') +
+  geom_bar(stat = "identity", position = "dodge", fill = 'darkgreen', color = 'black') +
   ggtitle("Histograma de numero d\'accidents") + ylab("Total") + xlab("Tipus de carril") +
   scale_y_log10()
 
 ggplot(data = d.carril.VM, aes(y = victimes, x = nom)) +
-  geom_bar(stat = "identity", position = "dodge", fill = 'lightgray', color = 'black') +
+  geom_bar(stat = "identity", position = "dodge", fill = 'darkgreen', color = 'black') +
   ggtitle("Victimes") + ylab("Mitja") + xlab("Tipus de carril")
 
 ggplot(data = d.carril.VM, aes(y = morts, x = nom)) +
-  geom_bar(stat = "identity", position = "dodge", fill = 'lightgray', color = 'black') +
+  geom_bar(stat = "identity", position = "dodge", fill = 'darkgreen', color = 'black') +
   ggtitle("Morts") + ylab("Mitja") + xlab("Tipus de carril")
 ```
 
@@ -470,7 +466,7 @@ d.carril.all <- data.frame(victimes = dataset$F_VICTIMES,
                        morts = dataset$F_MORTS,
                        carril = dataset$D_CARRIL_ESPECIAL)
 
-n.rep = 1000
+n.rep = 10000
 d.carril.c.V <- tapply(d.carril.all$victimes, d.carril.all$carril, c)
 d.carril.c.M <- tapply(d.carril.all$morts, d.carril.all$carril, c)
 p.carril.mean.V <- list()
@@ -502,12 +498,12 @@ for(i in 1:length(nom.carril)) {
 }
 
 ggplot(data = p.carril.VM, aes(y = victimes, x = nom)) +
-  geom_bar(stat = "identity", position = "dodge", fill = 'lightgray', color = 'black') +
+  geom_bar(stat = "identity", position = "dodge", fill = 'darkgreen', color = 'black') +
   geom_errorbar(aes(ymin = IC.min.V, ymax = IC.max.V), width=.2, position=position_dodge(.9)) +
   ggtitle("Victimes") + ylab("Mitja") + xlab("Tipus de carril")
 
 ggplot(data = p.carril.VM, aes(y = morts, x = nom)) +
-  geom_bar(stat = "identity", position = "dodge", fill = 'lightgray', color = 'black') +
+  geom_bar(stat = "identity", position = "dodge", fill = 'darkgreen', color = 'black') +
   geom_errorbar(aes(ymin = IC.min.M, ymax = IC.max.M), width=.2, position=position_dodge(.9)) +
   ggtitle("Morts") + ylab("Mitja") + xlab("Tipus de carril")
 ```
@@ -516,7 +512,7 @@ ggplot(data = p.carril.VM, aes(y = morts, x = nom)) +
 
 ## Velocitat de la via (D_Velocitat via)
 
-```{r velocitat, echo=FALSE}
+```{r velocitat, echo=TRUE}
 val.vel <- levels(factor(dataset$C_VELOCITAT_VIA))
 val.vel10 <- seq(10, 120, 10)
 nom.vel <- paste(val.vel, 'km/h')
@@ -558,49 +554,69 @@ d.vel.pearson.V = cor(d.vel.all$victimes, d.vel.all$velocitat, method = 'pearson
 d.vel.spearman.V = cor(d.vel.all$victimes, d.vel.all$velocitat, method = 'spearman')
 d.vel.pearson.M = cor(d.vel.all$morts, d.vel.all$velocitat, method = 'pearson')
 d.vel.spearman.M = cor(d.vel.all$morts, d.vel.all$velocitat, method = 'spearman')
+d.vel.pearson.MpV100 = cor(d.vel.all$MpV100, d.vel.all$velocitat, method = 'pearson')
+d.vel.spearman.MpV100 = cor(d.vel.all$MpV100, d.vel.all$velocitat, method = 'spearman')
 
-n.rep <- 1000
+n.rep <- 3000
 p.vel.pearson.V <- numeric(n.rep)
 p.vel.spearman.V <- numeric(n.rep)
 p.vel.pearson.M <- numeric(n.rep)
 p.vel.spearman.M <-numeric(n.rep)
+p.vel.pearson.MpV100 <- numeric(n.rep)
+p.vel.spearman.MpV100 <-numeric(n.rep)
 for(i in 1:n.rep) {
   p.vel <- sample(d.vel.all$velocitat)
   p.vel.pearson.V[i] = cor(d.vel.all$victimes, p.vel, method = 'pearson')
   p.vel.spearman.V[i] = cor(d.vel.all$victimes, p.vel, method = 'spearman')
   p.vel.pearson.M[i] = cor(d.vel.all$morts, p.vel, method = 'pearson')
   p.vel.spearman.M[i] = cor(d.vel.all$morts, p.vel, method = 'spearman')
+  p.vel.pearson.MpV100[i] = cor(d.vel.all$MpV100, p.vel, method = 'pearson')
+  p.vel.spearman.MpV100[i] = cor(d.vel.all$MpV100, p.vel, method = 'spearman')
 }
 
 plot.vel.limit.pearson.V <- c(min(p.vel.pearson.V) * 1.1,
                               max(c(p.vel.pearson.V, d.vel.pearson.V) * 1.1))
-hist(p.vel.pearson.V, xlim = plot.vel.limit.pearson.V, main = 'Correlació entre velocitat i víctimes')
+hist(p.vel.pearson.V, xlim = plot.vel.limit.pearson.V, main = 'Correlació entre velocitat i víctimes (pearson)')
 p.value.vel.pearson.V <- sum(p.vel.pearson.V >= d.vel.pearson.V) / n.rep
 lines(rep(d.vel.pearson.V, 2), c(0, n.rep), col = 'red')
 
 plot.vel.limit.spearman.V <- c(min(p.vel.spearman.V) * 1.1,
                                max(c(p.vel.spearman.V, d.vel.spearman.V) * 1.1))
-hist(p.vel.spearman.V, xlim = plot.vel.limit.spearman.V, main = 'Correlació entre velocitat i víctimes')
+hist(p.vel.spearman.V, xlim = plot.vel.limit.spearman.V, main = 'Correlació entre velocitat i víctimes (spearman)')
 p.value.vel.spearman.V <- sum(p.vel.spearman.V >= d.vel.spearman.V) / n.rep
 lines(rep(d.vel.spearman.V, 2), c(0, n.rep), col = 'red')
 
 plot.vel.limit.pearson.M <- c(min(p.vel.pearson.M) * 1.1,
                               max(c(p.vel.pearson.M, d.vel.pearson.M) * 1.1))
-hist(p.vel.pearson.M, xlim = plot.vel.limit.pearson.M, main = 'Correlació entre velocitat i morts')
+hist(p.vel.pearson.M, xlim = plot.vel.limit.pearson.M, main = 'Correlació entre velocitat i morts (pearson)')
 p.value.vel.pearson.M <- sum(p.vel.pearson.M >= d.vel.pearson.M) / n.rep
 lines(rep(d.vel.pearson.M, 2), c(0, n.rep), col = 'red')
 
 plot.vel.limit.spearman.M <- c(min(p.vel.spearman.M) * 1.1,
                                max(c(p.vel.spearman.M, d.vel.spearman.M) * 1.1))
-hist(p.vel.spearman.M, xlim = plot.vel.limit.spearman.M, main = 'Correlació entre velocitat i morts')
+hist(p.vel.spearman.M, xlim = plot.vel.limit.spearman.M, main = 'Correlació entre velocitat i morts (spearman)')
 p.value.vel.spearman.M <- sum(p.vel.spearman.M >= d.vel.spearman.M) / n.rep
 lines(rep(d.vel.spearman.M, 2), c(0, n.rep), col = 'red')
+
+plot.vel.limit.pearson.MpV100 <- c(min(p.vel.pearson.MpV100) * 1.1,
+                              max(c(p.vel.pearson.MpV100, d.vel.pearson.MpV100) * 1.1))
+hist(p.vel.pearson.MpV100, xlim = plot.vel.limit.pearson.MpV100, main = 'Correlació entre velocitat i percentatge de víctimes mortes (pearson)')
+p.value.vel.pearson.MpV100 <- sum(p.vel.pearson.MpV100 >= d.vel.pearson.MpV100) / n.rep
+lines(rep(d.vel.pearson.MpV100, 2), c(0, n.rep), col = 'red')
+
+plot.vel.limit.spearman.MpV100 <- c(min(p.vel.spearman.MpV100) * 1.1,
+                               max(c(p.vel.spearman.MpV100, d.vel.spearman.MpV100) * 1.1))
+hist(p.vel.spearman.MpV100, xlim = plot.vel.limit.spearman.MpV100, main = 'Correlació entre velocitat i percentatge de víctimes mortes (spearman)')
+p.value.vel.spearman.MpV100 <- sum(p.vel.spearman.MpV100 >= d.vel.spearman.MpV100) / n.rep
+lines(rep(d.vel.spearman.MpV100, 2), c(0, n.rep), col = 'red')
 
 {
   show(p.value.vel.pearson.V)
   show(p.value.vel.spearman.V)
   show(p.value.vel.pearson.M)
   show(p.value.vel.spearman.M)
+  show(p.value.vel.pearson.MpV100)
+  show(p.value.vel.spearman.MpV100)
 }
 
 d.vel.fit.V <- lm(victimes~velocitat, data = d.vel.all)
@@ -631,18 +647,20 @@ ggplot(data = d.vel.10.VM, aes(y = MpV100, x = vel10)) +
   geom_abline(intercept = summary(d.vel.fit.MpV100)$coefficient[1],
               slope = summary(d.vel.fit.MpV100)$coefficient[2], color = 'red')
 
-d.vel.IC.V <- summary(d.vel.fit.V)$coefficient[2] + summary(d.vel.fit.V)$coefficient[2] * c(-1.96, 1.96) * summary(d.vel.fit.V)$coefficient[4]
-d.vel.IC.M <- summary(d.vel.fit.M)$coefficient[2] + summary(d.vel.fit.V)$coefficient[2] * c(-1.96, 1.96) * summary(d.vel.fit.M)$coefficient[4]
+d.vel.IC.V <- summary(d.vel.fit.V)$coefficient[2] + c(-1.96, 1.96) * summary(d.vel.fit.V)$coefficient[4]
+d.vel.IC.M <- summary(d.vel.fit.M)$coefficient[2] + c(-1.96, 1.96) * summary(d.vel.fit.M)$coefficient[4]
+d.vel.IC.MpV100 <- summary(d.vel.fit.MpV100)$coefficient[2] + c(-1.96, 1.96) * summary(d.vel.fit.MpV100)$coefficient[4]
 
 {
   show(d.vel.IC.V)
   show(d.vel.IC.M)
+  show(d.vel.IC.MpV100)
 }
 ```
 
 ## Visibilitat (Boira, nit)
 
-```{r Visibilitat, echo=FALSE}
+```{r Visibilitat, echo=TRUE}
 d.visib.all <- data.frame(victimes = dataset$F_VICTIMES, morts = dataset$F_MORTS,
                          boira = dataset$D_BOIRA,
                          nit = dataset$grupHor,
@@ -692,7 +710,7 @@ ggplot(d.visib.VM, aes(y = morts, x = type, fill = class)) +
 ### Analisi
 
 ```{r analisi_visbilitat, echo=TRUE}
-n.rep <- 1000
+n.rep <- 5000
 bst.visib.mean.V <- data.frame(i = 1:n.rep)
 bst.visib.mean.M <- data.frame(i = 1:n.rep)
 
@@ -725,46 +743,114 @@ ggplot(data = bst.visib.VM, aes(y = morts, x = type, fill = class)) +
 
 ## Temporal (Sol, pluja, pluja forta, (D_SUPERFICIE))
 
-```{r carretera, echo=FALSE}
-d.temp.VM <- data.frame(victimes = tapply(dataset$F_VICTIMES, dataset$D_SUPERFICIE, mean),
-                        morts = tapply(dataset$F_MORTS, dataset$D_SUPERFICIE, mean),
-                        n = tapply(dataset$F_VICTIMES, dataset$D_SUPERFICIE, length),
-                        nom = levels(dataset$D_SUPERFICIE),
+```{r superficie, echo=TRUE}
+nom.superficie <- names(sort(tapply(dataset$F_VICTIMES, dataset$D_SUPERFICIE, length), decreasing = TRUE))
+nom.superficie <- nom.superficie[nom.superficie != 'Sense especificar']
+d.sup.VM <- data.frame(victimes = tapply(dataset$F_VICTIMES, dataset$D_SUPERFICIE, mean)[nom.superficie],
+                        morts = tapply(dataset$F_MORTS, dataset$D_SUPERFICIE, mean)[nom.superficie],
+                        n = tapply(dataset$F_VICTIMES, dataset$D_SUPERFICIE, length)[nom.superficie],
+                        nom = factor(nom.superficie, levels = nom.superficie),
                         color = 'red')
 
-ggplot(data = d.temp.VM, aes(x = nom, y = n), col) +
-  geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.temp.VM$color, color = 'black') + 
+ggplot(data = d.sup.VM, aes(x = nom, y = n), col) +
+  geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.sup.VM$color, color = 'black') + 
   ggtitle("Histograma de numero d\'accidents") + ylab("Total") + xlab("Temporal") +
   scale_y_continuous(trans = 'log10')
 
-ggplot(data = d.temp.VM, aes(x = nom, y = victimes), col) +
-  geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.temp.VM$color, color = 'black') + 
+ggplot(data = d.sup.VM, aes(x = nom, y = victimes), col) +
+  geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.sup.VM$color, color = 'black') + 
   ggtitle("Histograma de numero d\'accidents") + ylab("Victimes") + xlab("Temporal")
 
-ggplot(data = d.temp.VM, aes(x = nom, y = morts), col) +
-  geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.temp.VM$color, color = 'black') + 
-  ggtitle("Histograma de numero d\'accidents") + ylab("Morts") + xlab("Temporal")
-```
-
-```{r temporal, echo=FALSE}
-d.tempo.VM <- data.frame(victimes = tapply(dataset$F_VICTIMES, dataset$D_CLIMATOLOGIA, mean),
-                        morts = tapply(dataset$F_MORTS, dataset$D_CLIMATOLOGIA, mean),
-                        n = tapply(dataset$F_VICTIMES, dataset$D_CLIMATOLOGIA, length),
-                        nom = levels(dataset$D_CLIMATOLOGIA),
-                        color = 'red')
-
-ggplot(data = d.tempo.VM, aes(x = nom, y = n), col) +
-  geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.tempo.VM$color, color = 'black') + 
-  ggtitle("Histograma de numero d\'accidents") + ylab("Total") + xlab("Temporal") +
-  scale_y_continuous(trans = 'log10')
-
-ggplot(data = d.tempo.VM, aes(x = nom, y = victimes), col) +
-  geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.tempo.VM$color, color = 'black') + 
-  ggtitle("Histograma de numero d\'accidents") + ylab("Victimes") + xlab("Temporal")
-
-ggplot(data = d.tempo.VM, aes(x = nom, y = morts), col) +
-  geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.tempo.VM$color, color = 'black') + 
+ggplot(data = d.sup.VM, aes(x = nom, y = morts), col) +
+  geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.sup.VM$color, color = 'black') + 
   ggtitle("Histograma de numero d\'accidents") + ylab("Morts") + xlab("Temporal")
 ```
 
 ### Analisi
+
+```{r analisi_superficie, echo=TRUE}
+d.sup.type.n <- 1:length(nom.superficie)
+d.sup.n <- sum(d.sup.VM$n)
+d.sup.all <- data.frame(victimes = dataset$F_VICTIMES[dataset$D_SUPERFICIE != 'Sense especificar'],
+                        morts = dataset$F_MORTS[dataset$D_SUPERFICIE != 'Sense especificar'],
+                        superficie = dataset$D_SUPERFICIE[dataset$D_SUPERFICIE != 'Sense especificar'])
+
+n.rep <- 10000
+p.sup.V <- matrix(nrow = length(nom.superficie), ncol = n.rep)
+p.sup.M <- matrix(nrow = length(nom.superficie), ncol = n.rep)
+for(i in 1:n.rep) {
+  perm <- sample(d.sup.n, replace = T)
+  p.sup.V[, i] <- resample.means(d.sup.all$victimes, d.sup.VM$n, perm)
+  p.sup.M[, i] <- resample.means(d.sup.all$morts, d.sup.VM$n, perm)
+}
+
+dp.sup.VM <- data.frame(victimes = d.sup.VM$victimes,
+                        morts = d.sup.VM$morts,
+                        nom = factor(nom.superficie, levels = nom.superficie))
+
+for(i in d.sup.type.n) {
+    dp.sup.VM$IC.min.V[i] = quantile(p.sup.V[i, ], 0.025)
+    dp.sup.VM$IC.max.V[i] = quantile(p.sup.V[i, ], 0.975)
+    dp.sup.VM$IC.min.M[i] = quantile(p.sup.M[i, ], 0.025)
+    dp.sup.VM$IC.max.M[i] = quantile(p.sup.M[i, ], 0.975)
+}
+
+ggplot(data = dp.sup.VM, aes(x = nom, y = victimes), col) +
+  geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.sup.VM$color, color = 'black') + 
+  geom_errorbar(aes(ymin = IC.min.V, ymax = IC.max.V), width=.2, position=position_dodge(.9)) +
+  ggtitle("Histograma de numero d\'accidents") + ylab("Victimes") + xlab("Temporal")
+
+ggplot(data = dp.sup.VM, aes(x = nom, y = morts), col) +
+  geom_bar(width = 1, stat = "identity", position = "dodge", fill = d.sup.VM$color, color = 'black') + 
+  geom_errorbar(aes(ymin = IC.min.M, ymax = IC.max.M), width=.2, position=position_dodge(.9)) +
+  ggtitle("Histograma de numero d\'accidents") + ylab("Morts") + xlab("Temporal")
+```
+
+# Altres gràfiques d'interès
+
+## Distribució dels minuts
+
+```{r, echo=FALSE}
+hist(dataset$min + 1, breaks = 1:61, main = 'Distribució dels minuts')
+```
+
+## Gràfiques de visibilitat amb detall
+
+```{r, echo=FALSE}
+extra.visib.all <- data.frame(victimes = dataset$F_VICTIMES, morts = dataset$F_MORTS,
+                         boira = dataset$D_BOIRA,
+                         nit = dataset$grupHor,
+                         llum = dataset$D_LLUMINOSITAT)
+
+extra.visib.mean.Total <- c(tapply(extra.visib.all$victimes, extra.visib.all$boira, length),
+                        tapply(extra.visib.all$victimes, extra.visib.all$nit, length),
+                        tapply(extra.visib.all$victimes, extra.visib.all$llum, length))
+extra.visib.mean.V <- c(tapply(extra.visib.all$victimes, extra.visib.all$boira, mean),
+                    tapply(extra.visib.all$victimes, extra.visib.all$nit, mean),
+                    tapply(extra.visib.all$victimes, extra.visib.all$llum, mean))
+extra.visib.mean.M <- c(tapply(extra.visib.all$morts, extra.visib.all$boira, mean),
+                    tapply(extra.visib.all$morts, extra.visib.all$nit, mean),
+                    tapply(extra.visib.all$morts, extra.visib.all$llum, mean))
+
+extra.visib.type <- factor(c(rep('boira', length(levels(extra.visib.all$boira))),
+                         rep('nit', length(levels(extra.visib.all$nit))),
+                         rep('iluminació', length(levels(extra.visib.all$llum)))),
+                       levels = c('boira', 'nit', 'iluminació'))
+extra.visib.class <- factor(names(extra.visib.mean.V),
+                        levels = c(levels(extra.visib.all$boira), levels(extra.visib.all$nit), levels(extra.visib.all$llum)))
+extra.visib.opt <- levels(extra.visib.class)
+
+extra.visib.VM <- data.frame(victimes = extra.visib.mean.V,
+                         morts = extra.visib.mean.M,
+                         n = extra.visib.mean.Total,
+                         class = extra.visib.class,
+                         type = extra.visib.type)
+
+ggplot(extra.visib.VM, aes(y = victimes, x = type, fill = class)) +
+    geom_bar(stat = "identity", position = "dodge") + 
+    ggtitle("Victimes per accident") + ylab("Mitja") + xlab("Factor de visibilitat")
+
+ggplot(extra.visib.VM, aes(y = morts, x = type, fill = class)) +
+    geom_bar(stat = "identity", position = "dodge") + 
+    ggtitle("Morts per accident") + ylab("Mitja") + xlab("Factor de visibilitat")
+```
